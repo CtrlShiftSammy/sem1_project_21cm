@@ -20,11 +20,13 @@ freqs_sky = np.rint(np.loadtxt(freq_file)).astype(int)
 temps_sky = np.loadtxt(sky_temp_file)
 
 signals_dir = "simulated_signals"
-files = [f for f in os.listdir(signals_dir) if os.path.isfile(os.path.join(signals_dir, f))]
-if not files:
-    raise FileNotFoundError(f"No files found in signals_dir: {signals_dir}")
-signal_file = os.path.join(signals_dir, random.choice(files))
-print("Using randomly selected file:", signal_file)
+# files = [f for f in os.listdir(signals_dir) if os.path.isfile(os.path.join(signals_dir, f))]
+# if not files:
+#     raise FileNotFoundError(f"No files found in signals_dir: {signals_dir}")
+# signal_file = os.path.join(signals_dir, random.choice(files))
+# print("Using randomly selected file:", signal_file)
+# selected_template_name = os.path.basename(signal_file)
+signal_file = os.path.join(signals_dir, "signal_fstar_0p1_vc_16p5_fx_1_tau_0p159596_alpha_1p25_nu_min_1p5_R_mfp_30.csv")
 selected_template_name = os.path.basename(signal_file)
 
 signals = np.loadtxt(signal_file, delimiter=',', skiprows=1)
