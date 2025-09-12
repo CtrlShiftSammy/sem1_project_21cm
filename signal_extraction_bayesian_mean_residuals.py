@@ -126,15 +126,34 @@ for n_terms in terms_list:
 
 
 
-    log_probs = sampler.get_log_prob(discard=burn, thin=thin, flat=True)
-    # flat_samples = sampler.get_chain(discard=burn, thin=thin, flat=True)
+    # log_probs = sampler.get_log_prob(discard=burn, thin=thin, flat=True)
+    # # flat_samples = sampler.get_chain(discard=burn, thin=thin, flat=True)
 
-    best_idx = np.argmax(log_probs)
-    best_params = flat_samples[best_idx]
-    print(f"Perturbed sky bayesian fit params: {best_params}")
-    residuals_total = signal_sum - poly_pp_n(freq_sum, *best_params)
-    std_total = np.std(residuals_total)
-    stds.append(std_total)
+    # best_idx = np.argmax(log_probs)
+    # best_params = flat_samples[best_idx]
+    # print(f"Perturbed sky bayesian fit params: {best_params}")
+    # residuals_total = signal_sum - poly_pp_n(freq_sum, *best_params)
+    # std_total = np.std(residuals_total)
+    # stds.append(std_total)
+
+    
+    log_probs = sampler.get_log_prob(discard=burn, thin=thin, flat=True)
+    samples_subset = flat_samples[::10]
+
+    # mean_params = np.mean(samples_subset, axis=0)
+    # print(f"Mean parameters (every 10th sample): {mean_params}")
+    # residuals_total = signal_sum - poly_pp_n(freq_sum, *mean_params)
+    # std_total = np.std(residuals_total)
+    # stds.append(std_total)
+
+    residuals_subset = []
+    for sample in samples_subset:
+        residuals_total = signal_sum - poly_pp_n(freq_sum, *sample)
+        std_total = np.std(residuals_total)
+        residuals_subset.append(std_total)
+
+    stds.append(np.mean(residuals_subset))
+
     labels = []
     for i in range(1 + n_terms):
         if i == 0:
@@ -146,6 +165,8 @@ for n_terms in terms_list:
     # plt.show()
     plt.savefig("corner_plot_{}.png".format(n_terms))
     plt.close(fig)
+
+
 
     # # Total fit (foreground + scaled perturbation)
     # poly_pp_n = make_poly_plus_pert(n_terms, signal_temps_c)
@@ -176,7 +197,7 @@ plt.axhline(0.001, color='r', linestyle='--', label='Target threshold (1 mK)')
 plt.grid(True)
 plt.title("Residual Standard Deviation vs. Number of Polynomial Terms")
 plt.legend()
-plt.savefig("residuals_std_vs_poly_terms.png", dpi=900)
+plt.savefig("residuals_std_vs_poly_terms_mean_of_residuals.png", dpi=900)
 print("Residuals standard deviation vs. polynomial terms plot saved.")
 # plt.show()
 plt.close()
@@ -191,7 +212,7 @@ plt.title("Perturbation Scale Factor vs. Number of Polynomial Terms")
 plt.ylim(-2.1, 3.1)
 plt.legend()
 plt.grid(True)
-plt.savefig("perturbation_scale_factor_vs_poly_terms.png", dpi=900)
+plt.savefig("perturbation_scale_factor_vs_poly_terms_mean_of_residuals.png", dpi=900)
 print("Perturbation scale factor vs. polynomial terms plot saved.")
 # plt.show()
 plt.close()
