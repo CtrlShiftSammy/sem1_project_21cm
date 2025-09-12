@@ -100,7 +100,7 @@ for n_terms in terms_list:
 
     poly_pp_n = make_poly_plus_pert(n_terms, signal_temps_c)
     initial_center = np.concatenate([popt_clean, [0.5]])
-    nwalkers = 16 * ndim
+    nwalkers = 200
     positions = initial_center + 1e-4 * np.random.randn(nwalkers, ndim)
     positions[:, 1 + n_terms] = 0.5 + 0.1 * np.random.randn(nwalkers)
 
