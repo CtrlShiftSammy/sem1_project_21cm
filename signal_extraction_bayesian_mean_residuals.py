@@ -43,6 +43,15 @@ temps_sky_c = temps_sky[sky_idx]
 # Build signal_sum (sum of both temps at the matching frequencies)
 signal_sum = temps_sky_c + signal_temps_c
 
+
+Tsys = signal_sum.copy()
+tau = 1e6
+delta_nu = 1e6
+
+sigma_arr = Tsys / np.sqrt(tau * delta_nu)
+noise = np.random.normal(0, sigma_arr, len(sigma_arr))
+signal_sum += noise
+
 def make_poly(n_terms, nu0=150.0):
     def poly(nu, T0, *coeffs):
         logv = np.log10((nu / nu0))
@@ -66,7 +75,7 @@ T0_initial = 320.0
 terms_list = np.arange(1, 11)
 coeff_initials = [-2.54, -0.074, 0.013] + [0] * (len(terms_list) - 3)
 
-yerr = np.full(freq_sum.shape, 1e-3, dtype=float)
+yerr = sigma_arr
 
 stds = []
 scale_factors = []
@@ -101,10 +110,10 @@ for n_terms in terms_list:
 
 
     poly_pp_n = make_poly_plus_pert(n_terms, signal_temps_c)
-    initial_center = np.concatenate([popt_clean, [0.5]])
-    nwalkers = 200
+    initial_center = np.concatenate([popt_clean, [0.0]])
+    nwalkers = 1000
     positions = initial_center + 1e-4 * np.random.randn(nwalkers, ndim)
-    positions[:, 1 + n_terms] = 0.5 + 0.1 * np.random.randn(nwalkers)
+    positions[:, 1 + n_terms] = 0.0 + 0.1 * np.random.randn(nwalkers)
 
     sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=(freq_sum, signal_sum, yerr))
     nsteps = 3000
@@ -126,6 +135,17 @@ for n_terms in terms_list:
     scale_factors.append(c_m[1])
     scale_factor_errors.append(c_m[2] - c_m[1])
 
+    labels = []
+    for i in range(1 + n_terms):
+        if i == 0:
+            labels.append("T0")
+        else:
+            labels.append(f"a{i}")
+    labels += ["c"]
+    fig = corner.corner(flat_samples, labels=labels, truths=None)
+    # plt.show()
+    plt.savefig("corner_plot_{}_mean_residuals.png".format(n_terms))
+    plt.close(fig)
 
 
     # log_probs = sampler.get_log_prob(discard=burn, thin=thin, flat=True)
@@ -147,26 +167,18 @@ for n_terms in terms_list:
     # residuals_total = signal_sum - poly_pp_n(freq_sum, *mean_params)
     # std_total = np.std(residuals_total)
     # stds.append(std_total)
-
+    plt.figure(figsize=(10, 6))
     residuals_subset = []
     for sample in samples_subset:
         residuals_total = signal_sum - poly_pp_n(freq_sum, *sample)
+        plt.plot(freq_sum, poly_pp_n(freq_sum, *sample), color='gray', alpha=0.1)
         std_total = np.std(residuals_total)
         residuals_subset.append(std_total)
 
     stds.append(np.mean(residuals_subset))
+    plt.show()
+    plt.close()
 
-    labels = []
-    for i in range(1 + n_terms):
-        if i == 0:
-            labels.append("T0")
-        else:
-            labels.append(f"a{i}")
-    labels += ["c"]
-    fig = corner.corner(flat_samples, labels=labels, truths=None)
-    # plt.show()
-    plt.savefig("corner_plot_{}.png".format(n_terms))
-    plt.close(fig)
 
 
 
