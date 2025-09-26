@@ -8,7 +8,7 @@ import random
 import tqdm
 import emcee
 import corner
-
+np.random.seed(420)
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 plt.style.use('science')
 plt.rcParams['text.usetex'] = False
@@ -180,18 +180,27 @@ for n_terms in terms_list:
     print(f"Minimum abs residual (best fit): {np.min(np.abs(residuals_total))}")
 
     # noise_floor_highest_prob.append(np.sum(residuals_total / (yerr ** 2)) / np.sum(yerr ** -2))
-    
+
     noise_floor_numerator = 0
     noise_floor_denominator = 0
     for i in range(len(residuals_total)):
-        numerator = (residuals_total[i] / yerr[i]) ** 2
+        numerator = (residuals_total[i])** 2 / (yerr[i]) ** 2
         denominator = yerr[i] ** 2
-        noise_floor_numerator += numerator / denominator
+        noise_floor_numerator += numerator
         noise_floor_denominator +=  1 / denominator
-    noise_floor_highest_prob.append(noise_floor_numerator / noise_floor_denominator)
+    # noise_floor_highest_prob.append(noise_floor_numerator / noise_floor_denominator)
+
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(residuals_total, label='Residuals (best fit)', color='blue')
+    # plt.plot(yerr** (-2), label='yerr', color='orange', linestyle='--')
+    # plt.legend()
+    # plt.show(block=False)
+    # plt.pause(5)
+    # plt.close()
+    noise_floor_highest_prob.append(np.sqrt(noise_floor_numerator / noise_floor_denominator))
     print(f"[n_terms={n_terms}] Total fit std dev of residuals (highest prob): {std_total}")
     print(f"[n_terms={n_terms}] Total fit noise floor (highest prob): {noise_floor_highest_prob[-1]}")
-    print(f"Numerator: {np.sum(residuals_total / (yerr ** 2))}, Denominator: {np.sum(yerr ** -2)}")
+    print(f"Numerator: {noise_floor_numerator}, Denominator: {noise_floor_denominator}")
 
 
     samples_subset = flat_samples[::10]
@@ -207,11 +216,11 @@ for n_terms in terms_list:
     noise_floor_numerator = 0
     noise_floor_denominator = 0
     for i in range(len(residuals_total)):
-        numerator = (residuals_total[i] / yerr[i]) ** 2
+        numerator = (residuals_total[i])** 2 / (yerr[i]) ** 2
         denominator = yerr[i] ** 2
-        noise_floor_numerator += numerator / denominator
+        noise_floor_numerator += numerator
         noise_floor_denominator +=  1 / denominator
-    noise_floor_mean_params.append(noise_floor_numerator / noise_floor_denominator)
+    noise_floor_mean_params.append(np.sqrt(noise_floor_numerator / noise_floor_denominator))
     print(f"[n_terms={n_terms}] Total fit std dev of residuals (mean params): {std_total}")
     print(f"[n_terms={n_terms}] Total fit noise floor (mean params): {noise_floor_mean_params[-1]}")
     print(f"Numerator: {noise_floor_numerator}, Denominator: {noise_floor_denominator}")
