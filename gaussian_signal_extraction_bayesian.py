@@ -9,7 +9,7 @@ import random
 import tqdm
 import emcee
 import corner
-
+np.random.seed(420) # the REAL answer to life, the universe, and everything :)
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 plt.style.use('science')
 plt.rcParams['text.usetex'] = False

@@ -180,6 +180,7 @@ for n_terms in terms_list:
     print(f"Minimum abs residual (best fit): {np.min(np.abs(residuals_total))}")
 
     # noise_floor_highest_prob.append(np.sum(residuals_total / (yerr ** 2)) / np.sum(yerr ** -2))
+    
     noise_floor_numerator = 0
     noise_floor_denominator = 0
     for i in range(len(residuals_total)):
